@@ -1,19 +1,19 @@
-helloworld : main.o print.o
-	g++ -o helloworld main.o print.o
+helloworld : main.o my_print.o
+	g++ -o helloworld main.o my_print.o
 
-test : test.o print.o
-	g++ -o test test.o print.o
+test : test.o my_print.o
+	g++ -o test test.o my_print.o
 
-mian.o : mian.cpp print.h
+mian.o : mian.cpp my_print.h
 	g++ -o mian.o -c main.cpp
 
-test.o : test.cpp print.h
+test.o : test.cpp my_print.h
 	g++ -o test.o -c test.cpp
 
-print.o : print.cpp print.h
-	g++ -o print.o -c print.cpp
+my_print.o : my_print.cpp my_print.h
+	g++ -o my_print.o -c my_print.cpp
 
 clean :
 	rm *.o
-	rm test
 	rm helloworld
+	rm test

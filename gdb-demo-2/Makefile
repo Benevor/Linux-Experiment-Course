@@ -1,7 +1,7 @@
 LDFLAGS+=-lpthread
 
-test:
-	gcc -g test.cpp -o test $(LDFLAGS)
+gdb_test:
+	gcc -g gdb_test.cpp -o gdb_test $(LDFLAGS)
 
 clean:
-	rm test
+	rm gdb_test

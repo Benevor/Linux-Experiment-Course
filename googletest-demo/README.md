@@ -12,7 +12,7 @@ ls -l /usr/local/lib
 
 运行测试
 方法一：
-    g++ ./test/gtest_main.cpp ./test/unittest.cpp ./MyProject/my_math.cpp -o my_test -lgtest -lgmock -lpthread -std=c++11
+    g++ ./test/gtest_main.cpp ./test/unit_test.cpp ./MyProject/my_math.cpp -o my_test -lgtest -lgmock -lpthread -std=c++11
 方法二：使用cmake
     mkdir build
     cd build
