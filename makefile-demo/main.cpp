@@ -1,5 +1,7 @@
 #include "print.h"
-int main(void){
+
+int main(void)
+{
     printhello();
     return 0;
 }

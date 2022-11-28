@@ -1,9 +1,11 @@
 #include "print.h"
 
-void printhello(){
+void printhello()
+{
   printf("Hello, world\n");
 }
 
-void printtest(){
+void printtest()
+{
   printf("Test\n");
 }

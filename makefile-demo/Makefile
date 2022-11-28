@@ -14,4 +14,6 @@ print.o : print.cpp print.h
 	g++ -o print.o -c print.cpp
 
 clean :
-	rm helloworld test main.o test.o print.o
+	rm *.o
+	rm test
+	rm helloworld
