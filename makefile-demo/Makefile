@@ -14,6 +14,14 @@ my_print.o : my_print.cpp my_print.h
 	g++ -o my_print.o -c my_print.cpp
 
 clean :
+ifneq ("", $(wildcard *.o))
 	rm *.o
+endif
+
+ifeq (helloworld, $(wildcard helloworld))
 	rm helloworld
+endif
+
+ifeq (test, $(wildcard test))
 	rm test
+endif

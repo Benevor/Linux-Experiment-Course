@@ -10,5 +10,10 @@ process.o : process.cpp process.h
 	g++ -o process.o -c process.cpp
 
 clean :
+ifneq ("", $(wildcard *.o))
 	rm *.o
+endif
+
+ifeq (test, $(wildcard test))
 	rm test
+endif
