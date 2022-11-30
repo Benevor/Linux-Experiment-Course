@@ -1,19 +1,9 @@
 LDFLAGS+=-lpthread
 
-test : main.o process.o
-	g++ -o test main.o process.o $(LDFLAGS)
+gdb_test:
+	g++ -g gdb_test.cpp -o gdb_test $(LDFLAGS)
 
-main.o : main.cpp process.h
-	g++ -o main.o -c main.cpp
-
-process.o : process.cpp process.h
-	g++ -o process.o -c process.cpp
-
-clean :
-ifneq ("", $(wildcard *.o))
-	rm *.o
-endif
-
-ifeq (test, $(wildcard test))
-	rm test
+clean:
+ifeq (gdb_test, $(wildcard gdb_test))
+	rm gdb_test
 endif

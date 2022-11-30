@@ -9,14 +9,20 @@ info inferiors
 
 break gdb_test.cpp:27
 cont
+info thread
 
 inferior 2
-break gdb_test.cpp:51
+break gdb_test.cpp:52
 cont
 cont
 
 inferior 1
-break gdb_test.cpp:42
+break gdb_test.cpp:43
 cont
+info thread
+
+inferior 2
 cont
 
+inferior 1
+cont
