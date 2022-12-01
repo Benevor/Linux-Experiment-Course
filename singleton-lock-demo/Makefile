@@ -1,6 +1,6 @@
 LDFLAGS+=-lpthread
 
-main:
+main: main.cpp lazy.h hungry.h
 	g++ -o main main.cpp $(LDFLAGS)
 
 clean:
