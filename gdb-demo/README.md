@@ -1,3 +1,4 @@
+```bash
 set detach-on-fork off
 show detach-on-fork
 catch fork
@@ -26,3 +27,5 @@ cont
 
 inferior 1
 cont
+
+```

@@ -10,7 +10,7 @@ class CPluginController
 public:
 	CPluginController(void);
 	virtual ~CPluginController(void);
-	
+
 	bool InitializeController(void);
 	bool UninitializeController(void);
 
@@ -19,7 +19,7 @@ public:
 
 private:
 	std::vector<void *> m_vhForPlugin;
-	std::vector<IPrintPlugin*> m_vpPlugin;
+	std::vector<IPrintPlugin *> m_vpPlugin;
 };
 
 #endif

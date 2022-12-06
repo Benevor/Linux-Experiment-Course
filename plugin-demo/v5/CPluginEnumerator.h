@@ -12,7 +12,7 @@ public:
     CPluginEnumerator();
     virtual ~CPluginEnumerator();
 
-    bool GetPluginNames(vector<string>& vstrPluginNames);
+    bool GetPluginNames(vector<string> &vstrPluginNames);
 };
 
 #endif

@@ -7,7 +7,6 @@ class IPrintPlugin;
 class CPluginController
 {
 public:
-
 	CPluginController(void);
 
 	virtual ~CPluginController(void);
@@ -22,13 +21,11 @@ public:
 
 	bool IfProcess(char *Function);
 
-	bool ProcessFunction(char *Function,char *Document);
-	
-private:
-	
-	std::vector<void *> m_vhForPlugin;
-	std::vector<IPrintPlugin*> m_vpPlugin;
+	bool ProcessFunction(char *Function, char *Document);
 
+private:
+	std::vector<void *> m_vhForPlugin;
+	std::vector<IPrintPlugin *> m_vpPlugin;
 };
 
 #endif

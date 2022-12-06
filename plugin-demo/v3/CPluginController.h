@@ -3,16 +3,16 @@
 
 #include <vector>
 
-typedef void (*PROC_PRINT)(void); 
-typedef void (*PROC_HELP)(void); 
-typedef int (*PROC_GETID)(void); 
+typedef void (*PROC_PRINT)(void);
+typedef void (*PROC_HELP)(void);
+typedef int (*PROC_GETID)(void);
 
 class CPluginController
 {
 public:
 	CPluginController(void);
 	virtual ~CPluginController(void);
-	
+
 	bool InitializeController(void);
 	bool UninitializeController(void);
 

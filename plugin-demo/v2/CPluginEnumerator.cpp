@@ -11,30 +11,30 @@ CPluginEnumerator::~CPluginEnumerator()
 }
 
 // LJB::获取所有动态链接库的文件名
-bool CPluginEnumerator::GetPluginNames(vector<string>& vstrPluginNames)
+bool CPluginEnumerator::GetPluginNames(vector<string> &vstrPluginNames)
 {
-    DIR *dir = opendir("./plugin");
-    if(dir == 0)
-	return false;
-    
-    for(;;)
-    {
-	struct dirent *pentry = readdir(dir);
-	if(pentry == 0)
-	    break;
+	DIR *dir = opendir("./plugin");
+	if (dir == 0)
+		return false;
 
-	if(strcmp(pentry->d_name, ".") == 0)
-	    continue;
+	for (;;)
+	{
+		struct dirent *pentry = readdir(dir);
+		if (pentry == 0)
+			break;
 
-	if(strcmp(pentry->d_name, "..") == 0)
-	    continue;
+		if (strcmp(pentry->d_name, ".") == 0)
+			continue;
 
-	string str = "./plugin/";
-	str += pentry->d_name;
-	vstrPluginNames.push_back(str);
-    }
+		if (strcmp(pentry->d_name, "..") == 0)
+			continue;
 
-    closedir(dir);
+		string str = "./plugin/";
+		str += pentry->d_name;
+		vstrPluginNames.push_back(str);
+	}
 
-    return true;
+	closedir(dir);
+
+	return true;
 }

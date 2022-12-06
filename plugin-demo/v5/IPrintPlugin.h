@@ -10,5 +10,5 @@ public:
 	virtual void Print() = 0;
 	virtual int GetID() = 0;
 	virtual const char *GetName() = 0; //添加部分
-	virtual void Fun(char*) = 0;
+	virtual void Fun(char *) = 0;
 };
