@@ -8,7 +8,7 @@ test.o:test.cpp
 libfunc.so:a.h a.cpp
 	g++ -fpic -shared -o libfunc.so a.cpp 
 
-libfunc:a.h a.cpp  
+lib:a.h a.cpp  
 	g++ -fpic -shared -o libfunc.so a.cpp 
 
 clean:
