@@ -1,5 +1,5 @@
 test:
-	g++ -o test test.cpp CPluginEnumerator.cpp -ldl
+	g++ -o test test.cpp CPluginEnumerator.cpp CPluginController.cpp -ldl
 
 lib:function.cpp function1.cpp
 	g++ -fpic -shared -o ./plugin/libfunc.so function.cpp

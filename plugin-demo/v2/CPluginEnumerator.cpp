@@ -10,7 +10,7 @@ CPluginEnumerator::~CPluginEnumerator()
 {
 }
 
-// LJB::获取所有动态链接库的所有函数的函数名
+// LJB::获取所有动态链接库的文件名
 bool CPluginEnumerator::GetPluginNames(vector<string>& vstrPluginNames)
 {
     DIR *dir = opendir("./plugin");
