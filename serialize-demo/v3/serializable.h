@@ -7,8 +7,7 @@ enum class_type
 {
     CLASS_NONE,
     CLASS_A,
-    CLASS_B,
-    CLASS_C
+    CLASS_B
 };
 
 class SerializableBase
