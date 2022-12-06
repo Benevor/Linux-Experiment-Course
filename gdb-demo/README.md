@@ -1,3 +1,5 @@
+参考链接：https://blog.csdn.net/pbymw8iwm/article/details/7876797
+
 ```bash
 set detach-on-fork off
 show detach-on-fork
