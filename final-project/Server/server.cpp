@@ -10,6 +10,9 @@
 #define HOST_A_PATH "/home/liujibo/Linux-Experiment-Course/final-project/HostA/"
 #define HOST_B_PATH "/home/liujibo/Linux-Experiment-Course/final-project/HostB/"
 
+#define REQUEST_BYTE_MAX 100
+#define RESPONSE_BYTE_MAX 500
+
 class CTCPServer {
  public:
   CTCPServer(int nServerPort,
@@ -133,7 +136,31 @@ class CMyTCPServer : public CTCPServer {
 
  private:
   virtual int ServerFunction(int nConnectedSocket, int nListenSocket) {
-    ::write(nConnectedSocket, "Received from Server: Hello World\n", 35);
+    char request[REQUEST_BYTE_MAX];
+    std::vector<char *> result;
+
+    while (!(result.size() == 2 && strcmp(result[1], "close") == 0)) {
+      if (!result.empty()) {
+        // 执行命令
+        do_command(nConnectedSocket, result);
+      }
+
+      // 循环接收命令
+      result.clear();
+      memset(request, 0, REQUEST_BYTE_MAX);
+      ::read(nConnectedSocket, request, REQUEST_BYTE_MAX);
+
+      // 切割命令
+      char delims[] = "|";
+      char *tmp = nullptr;
+      tmp = strtok(request, delims);
+      while (tmp != nullptr) {
+        result.push_back(tmp);
+        tmp = strtok(nullptr, delims);
+      }
+    }
+
+    std::cout << "close connection !!! " << std::endl;
     return 0;
   }
 
@@ -145,8 +172,35 @@ class CMyTCPServer : public CTCPServer {
     return true;
   };
 
-  std::vector<Food> foods_;
-  std::vector<Record> records_;
+  void do_command(int nConnectedSocket, std::vector<char *> result) {
+    if (result.size() == 2 && strcmp(result[1], "getfood") == 0) {
+      Food f(2, "food1");
+      add_food(&f);
+      auto info = get_all_food_info();
+      ::write(nConnectedSocket, info.c_str(), strlen(info.c_str()));
+    }
+  }
+
+  std::string get_all_food_info() {
+    std::stringstream ss;
+    for (int i = 0; i < foods_.size(); ++i) {
+      ss << foods_[i]->get_info();
+      ss << "\n";
+    }
+    std::string str = ss.str();
+    return str;
+  }
+
+  std::string get_all_record_info() {
+    return "";
+  }
+
+  void add_food(Food *f) {
+    foods_.push_back(f);
+  }
+
+  std::vector<Food *> foods_;
+  std::vector<Record *> records_;
 };
 
 int main(int argc, char **argv) {

@@ -7,6 +7,9 @@
 
 #include <iostream>
 
+#define REQUEST_BYTE_MAX 100
+#define RESPONSE_BYTE_MAX 500
+
 class CTCPClient {
  public:
   CTCPClient(int nServerPort, const char *strServerIP) {
@@ -49,18 +52,17 @@ class CTCPClient {
     return 0;
   }
 
-  int Run() {
-    auto re = ClientFunction(nClientSocket_);
+  int Run(char *command) {
+    auto re = ClientFunction(nClientSocket_, command);
     return re;
   }
 
-  int Close() {
+  void Close() {
     ::close(nClientSocket_);
-    return 0;
   }
 
  private:
-  virtual int ClientFunction(int nConnectedSocket) = 0;
+  virtual int ClientFunction(int nConnectedSocket, char *command) = 0;
 
  private:
   int m_nServerPort;
@@ -80,14 +82,38 @@ class CMyTCPClient : public CTCPClient {
   }
 
  private:
-  virtual int ClientFunction(int nConnectedSocket) {
-    char buf[35];
+  virtual int ClientFunction(int nConnectedSocket, char *command) {
+    if (command == nullptr) {
+      return -1;
+    }
 
-    ::read(nConnectedSocket, buf, 35);
+    if (strcmp(command, "getfood") == 0) {
+      // send request
+      char request[REQUEST_BYTE_MAX];
+      memset(request, 0, REQUEST_BYTE_MAX);
+      int offset = 0;
+      memcpy(request + offset, user_name_, strlen(user_name_));
+      offset += strlen(user_name_);
+      memcpy(request + offset, "|", 1);
+      offset += 1;
+      memcpy(request + offset, command, strlen(command));
+      offset += strlen(command);
+      memcpy(request + offset, "|", 1);
+      ::write(nConnectedSocket, request, REQUEST_BYTE_MAX);
 
-    std::cout << buf << std::endl;
+      // receive response
+      char response[RESPONSE_BYTE_MAX];
+      memset(response, 0, RESPONSE_BYTE_MAX);
+      ::read(nConnectedSocket, response, RESPONSE_BYTE_MAX);
+      std::cout << response << std::endl;
+    } else {
+      std::cout << "else" << std::endl;
+    }
     return 0;
   }
+
+ public:
+  char user_name_[20];
 };
 
 int main(int argc, char **argv) {
@@ -99,7 +125,17 @@ int main(int argc, char **argv) {
   CMyTCPClient client(server_port, "127.0.0.1");
   client.Init();
 
-  client.Run();
+  std::cout << "Please enter your user name: ";
+  std::cin >> client.user_name_;
+
+  char command[50];
+  std::cout << "Please enter your command: ";
+  std::cin >> command;
+  while (strcmp(command, "q") != 0 && strcmp(command, "exit") != 0) {
+    client.Run(command);
+    std::cout << "Please enter your command: ";
+    std::cin >> command;
+  }
 
   client.Close();
 
