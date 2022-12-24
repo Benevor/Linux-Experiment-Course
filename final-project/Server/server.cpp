@@ -156,8 +156,8 @@ int main(int argc, char **argv) {
   }
 
   int server_port = atoi(argv[1]);
-  std::string server_name = "";
-  std::string host_path = "";
+  std::string server_name;
+  std::string host_path;
 
   if (strcmp(argv[2], "a") == 0) {
     server_name = SERVER_A_NAME;
