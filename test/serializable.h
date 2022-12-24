@@ -62,7 +62,6 @@ class Food : public SerializableBase {
     return true;
   }
 
-  // 错误
   SerializableBase *deserialize(FILE *fp) override {
     Food *f = new Food();
     fread(&(f->price_), sizeof(int32_t), 1, fp);
