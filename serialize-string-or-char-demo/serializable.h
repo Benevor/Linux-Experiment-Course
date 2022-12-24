@@ -3,7 +3,7 @@
 #include <vector>
 #include <cstdio>
 #include <cstring>
-#include<sstream>
+#include <sstream>
 
 enum class_type {
   CLASS_NONE,
