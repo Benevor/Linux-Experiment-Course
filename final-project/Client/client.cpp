@@ -84,7 +84,7 @@ class CMyTCPClient : public CTCPClient {
  private:
   virtual int ClientFunction(int nConnectedSocket, char *command) {
     if (command == nullptr) {
-      return -1;
+      return 0;
     }
 
     if (strcmp(command, "getfood") == 0) {
@@ -106,6 +106,20 @@ class CMyTCPClient : public CTCPClient {
       memset(response, 0, RESPONSE_BYTE_MAX);
       ::read(nConnectedSocket, response, RESPONSE_BYTE_MAX);
       std::cout << response << std::endl;
+    } else if (strcmp(command, "close") == 0) {
+      // send request
+      char request[REQUEST_BYTE_MAX];
+      memset(request, 0, REQUEST_BYTE_MAX);
+      int offset = 0;
+      memcpy(request + offset, user_name_, strlen(user_name_));
+      offset += strlen(user_name_);
+      memcpy(request + offset, "|", 1);
+      offset += 1;
+      memcpy(request + offset, command, strlen(command));
+      offset += strlen(command);
+      memcpy(request + offset, "|", 1);
+      ::write(nConnectedSocket, request, REQUEST_BYTE_MAX);
+      return -1;
     } else {
       std::cout << "else" << std::endl;
     }
@@ -131,8 +145,11 @@ int main(int argc, char **argv) {
   char command[50];
   std::cout << "Please enter your command: ";
   std::cin >> command;
-  while (strcmp(command, "q") != 0 && strcmp(command, "exit") != 0) {
-    client.Run(command);
+  while (true) {
+    auto re = client.Run(command);
+    if (re != 0) {
+      break;
+    }
     std::cout << "Please enter your command: ";
     std::cin >> command;
   }

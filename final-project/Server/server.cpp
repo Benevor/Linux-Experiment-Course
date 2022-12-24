@@ -81,7 +81,7 @@ class CTCPServer {
       return -1;
     }
 
-    // LJB:: 修改为无限次响应的服务器
+    // Benevor:: 修改为无限次响应的服务器
     while (true) {
       sockaddr_in ClientAddress;
       socklen_t LengthOfClientAddress = sizeof(sockaddr_in);
@@ -92,6 +92,7 @@ class CTCPServer {
         return -1;
       }
 
+      // TODO Benevor:: 这里改为子线程处理，就可以使server同时处理多个client的请求
       auto re = ServerFunction(nConnectedSocket, nListenSocket);
 
       ::close(nConnectedSocket);
@@ -148,7 +149,9 @@ class CMyTCPServer : public CTCPServer {
       // 循环接收命令
       result.clear();
       memset(request, 0, REQUEST_BYTE_MAX);
-      ::read(nConnectedSocket, request, REQUEST_BYTE_MAX);
+      if (::read(nConnectedSocket, request, REQUEST_BYTE_MAX) <= 0) {
+        break;
+      }
 
       // 切割命令
       char delims[] = "|";
@@ -177,7 +180,9 @@ class CMyTCPServer : public CTCPServer {
       Food f(2, "food1");
       add_food(&f);
       auto info = get_all_food_info();
-      ::write(nConnectedSocket, info.c_str(), strlen(info.c_str()));
+      if (::write(nConnectedSocket, info.c_str(), strlen(info.c_str())) == -1) {
+        return;
+      }
     }
   }
 
