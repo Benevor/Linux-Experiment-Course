@@ -27,15 +27,19 @@ class Food : public SerializableBase {
  public:
   Food() {
     this->price_ = 0;
-    this->name_ = "";
+    this->name_size_ = 0;
+    this->name_ = nullptr;
   }
 
   explicit Food(int32_t price, std::string name) {
     this->price_ = price;
-    this->name_ = name;
+    this->name_size_ = name.size();
+    this->name_ = new char[this->name_size_];
+    strcpy(this->name_, name.c_str());
   }
 
   virtual ~Food() {
+    delete this->name_;
   }
 
  public:
@@ -45,37 +49,31 @@ class Food : public SerializableBase {
 
   std::string get_info() override {
     std::stringstream ss;
-    ss << "name: "<< name_<< " price: "<<price_;
+    ss << "name: " << this->name_ << "  |  price: " << price_;
     std::string str = ss.str();
     return str;
   }
 
   bool serialize(FILE *fp) override {
     if (fp == nullptr) { return false; }
-    unsigned long name_size = this->name_.size();
     fwrite(&(this->price_), sizeof(int32_t), 1, fp);
-    fwrite(&(name_size), sizeof(unsigned long), 1, fp);
-    fwrite(this->name_.c_str(), name_size, 1, fp);
+    fwrite(&(this->name_size_), sizeof(unsigned long), 1, fp);
+    fwrite(this->name_, this->name_size_, 1, fp);
     return true;
   }
 
+  // 错误
   SerializableBase *deserialize(FILE *fp) override {
     Food *f = new Food();
-    unsigned long name_size =0;
     fread(&(f->price_), sizeof(int32_t), 1, fp);
-    fread(&(name_size), sizeof(unsigned long), 1, fp);
-    char* temp = new char[name_size];
-    fread(temp, name_size , 1, fp);
-    // this->name_ = temp;
-    // delete temp;
-    std::string s(temp);
-    this->name_ = s;
-
-    std::cout<< "name___: "<< this->name_ << std::endl;
+    fread(&(f->name_size_), sizeof(unsigned long), 1, fp);
+    f->name_ = new char[f->name_size_];
+    fread(f->name_, f->name_size_, 1, fp);
     return f;
   }
 
- public:
+ private:
   int32_t price_;
-  std::string name_;
+  unsigned long name_size_;
+  char *name_;
 };
