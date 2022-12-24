@@ -92,7 +92,7 @@ class CTCPServer {
       auto re = ServerFunction(nConnectedSocket, nListenSocket);
 
       ::close(nConnectedSocket);
-      if (re != 1) {
+      if (re != 0) {
         break;
       }
     }
@@ -134,7 +134,7 @@ class CMyTCPServer : public CTCPServer {
  private:
   virtual int ServerFunction(int nConnectedSocket, int nListenSocket) {
     ::write(nConnectedSocket, "Received from Server: Hello World\n", 35);
-    return 1;
+    return 0;
   }
 
   virtual bool serialize() {

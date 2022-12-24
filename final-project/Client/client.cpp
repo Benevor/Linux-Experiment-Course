@@ -22,43 +22,53 @@ class CTCPClient {
   }
 
  public:
-  int Run() {
-    int nClientSocket = ::socket(AF_INET, SOCK_STREAM, 0);
-    if (-1 == nClientSocket) {
+  int Init() {
+    // nClientSocket_ init
+    nClientSocket_ = ::socket(AF_INET, SOCK_STREAM, 0);
+    if (-1 == nClientSocket_) {
       std::cout << "socket error" << std::endl;
       return -1;
     }
 
-    sockaddr_in ServerAddress;
-    memset(&ServerAddress, 0, sizeof(sockaddr_in));
-    ServerAddress.sin_family = AF_INET;
-    if (::inet_pton(AF_INET, m_strServerIP, &ServerAddress.sin_addr) != 1) {
+    // ServerAddress_ init
+    memset(&ServerAddress_, 0, sizeof(sockaddr_in));
+    ServerAddress_.sin_family = AF_INET;
+    if (::inet_pton(AF_INET, m_strServerIP, &ServerAddress_.sin_addr) != 1) {
       std::cout << "inet_pton error" << std::endl;
-      ::close(nClientSocket);
+      ::close(nClientSocket_);
       return -1;
     }
+    ServerAddress_.sin_port = htons(m_nServerPort);
 
-    ServerAddress.sin_port = htons(m_nServerPort);
-
-    if (::connect(nClientSocket, (sockaddr *) &ServerAddress, sizeof(ServerAddress)) == -1) {
+    if (::connect(nClientSocket_, (sockaddr *) &ServerAddress_, sizeof(ServerAddress_)) == -1) {
       std::cout << "connect error" << std::endl;
-      ::close(nClientSocket);
+      ::close(nClientSocket_);
       return -1;
     }
-
-    ClientFunction(nClientSocket);
-
-    ::close(nClientSocket);
 
     return 0;
   }
 
+  int Run() {
+    auto re = ClientFunction(nClientSocket_);
+    return re;
+  }
+
+  int Close() {
+    ::close(nClientSocket_);
+    return 0;
+  }
+
  private:
-  virtual void ClientFunction(int nConnectedSocket) = 0;
+  virtual int ClientFunction(int nConnectedSocket) = 0;
 
  private:
   int m_nServerPort;
   char *m_strServerIP;
+
+  // add by Benevor
+  int nClientSocket_;
+  sockaddr_in ServerAddress_;
 };
 
 class CMyTCPClient : public CTCPClient {
@@ -70,12 +80,13 @@ class CMyTCPClient : public CTCPClient {
   }
 
  private:
-  virtual void ClientFunction(int nConnectedSocket) {
+  virtual int ClientFunction(int nConnectedSocket) {
     char buf[35];
 
     ::read(nConnectedSocket, buf, 35);
 
     std::cout << buf << std::endl;
+    return 0;
   }
 };
 
@@ -86,7 +97,11 @@ int main(int argc, char **argv) {
   }
   int server_port = atoi(argv[1]);
   CMyTCPClient client(server_port, "127.0.0.1");
+  client.Init();
+
   client.Run();
+
+  client.Close();
 
   return 0;
 }
