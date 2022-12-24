@@ -1,2 +1,4 @@
 .vscode/
+.idea/
 googletest-demo/build/
+final-project/build/
