@@ -14,6 +14,13 @@
 
 class CTCPServer {
  public:
+  CTCPServer() {
+    this->m_nServerPort = 0;
+    this->m_strBoundIP = nullptr;
+    this->m_nLengthOfQueueOfListen = 0;
+    this->file_path_ = nullptr;
+    this->server_name_ = nullptr;
+  };
   CTCPServer(int nServerPort,
              std::string server_name,
              std::string file_path,
@@ -106,10 +113,11 @@ class CTCPServer {
 
  private:
   virtual int ServerFunction(int nConnectedSocket, int nListenSocket) = 0;
-  virtual bool serialize() = 0;
-  virtual bool deserialize() = 0;
+  virtual bool serialize(SerializableBase *s, class_type type) = 0;
+ public:
+  virtual void deserialize(std::string src_path, std::string dest_path, CTCPServer *new_server) = 0;
 
- private:
+ protected:
   int m_nServerPort;
   char *m_strBoundIP;
   int m_nLengthOfQueueOfListen;
@@ -119,6 +127,7 @@ class CTCPServer {
 
 class CMyTCPServer : public CTCPServer {
  public:
+  CMyTCPServer() : CTCPServer() {};
   CMyTCPServer(int nServerPort,
                std::string server_name,
                std::string file_path,
@@ -172,13 +181,17 @@ class CMyTCPServer : public CTCPServer {
     return 0;
   }
 
-  virtual bool serialize() {
+  virtual bool serialize(SerializableBase *s, class_type type) {
+    std::string path(file_path_);
+    std::string server_name(server_name_);
+    path = path + server_name + "-data";
+    FILE *fp = fopen(path.c_str(), "a+");
+    if (fp == nullptr) { return false; }
+    fwrite(&type, sizeof(int), 1, fp);
+    s->serialize(fp);
+    fclose(fp);
     return true;
   }
-
-  virtual bool deserialize() {
-    return true;
-  };
 
   void do_command(int nConnectedSocket, std::vector<char *> result) {
     // command: getfood
@@ -236,6 +249,42 @@ class CMyTCPServer : public CTCPServer {
     ::write(nConnectedSocket, "error command", 13);
   }
 
+  void add_food(Food *f) {
+    foods_.push_back(f);
+    // 序列化
+    serialize(f, CLASS_FOOD);
+  }
+
+  void add_record(Record *r) {
+    records_.push_back(r);
+    // 序列化
+    serialize(r, CLASS_RECORD);
+  }
+
+ public:
+  virtual void deserialize(std::string src_path, std::string dest_path, CTCPServer *new_server) {
+    CMyTCPServer *my_server = dynamic_cast<CMyTCPServer *>(new_server);
+    std::cout << "src_path: " << src_path.c_str() << std::endl;
+    FILE *fp = fopen(src_path.c_str(), "r+");
+    class_type nType = CLASS_NONE;
+    auto re = fread(&nType, sizeof(int), 1, fp);
+    while (re != 0) {
+      if (nType == CLASS_FOOD) {
+        Food f;
+        auto tmp = f.deserialize(fp);
+        Food *food = dynamic_cast<Food *>(tmp);
+        my_server->add_food(food);
+      } else if (nType == CLASS_RECORD) {
+        Record r;
+        auto tmp = r.deserialize(fp);
+        auto record = dynamic_cast<Record *>(tmp);
+        my_server->add_record(record);
+      }
+      re = fread(&nType, sizeof(int), 1, fp);
+    }
+    fclose(fp);
+  };
+
   std::string get_all_food_info() {
     std::stringstream ss;
     for (auto &food: foods_) {
@@ -256,16 +305,7 @@ class CMyTCPServer : public CTCPServer {
     return str;
   }
 
-  void add_food(Food *f) {
-    foods_.push_back(f);
-    // TODO:序列化
-  }
-
-  void add_record(Record *r) {
-    records_.push_back(r);
-    // TODO:序列化
-  }
-
+ private:
   std::vector<Food *> foods_;
   std::vector<Record *> records_;
 };

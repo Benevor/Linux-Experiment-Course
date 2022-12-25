@@ -23,7 +23,11 @@ file(GLOB_RECURSE store
         ${PROJECT_SOURCE_DIR}/Store/*.cpp
         )
 
+file(GLOB_RECURSE monitor
+        ${PROJECT_SOURCE_DIR}/Monitor/*.cpp
+        )
+
 add_executable(client ${client})
 add_executable(server ${server})
 add_executable(store ${store})
-#add_executable(server_b ${server_b})
+add_executable(monitor ${monitor})
