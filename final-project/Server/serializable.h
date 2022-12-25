@@ -72,6 +72,14 @@ class Food : public SerializableBase {
     return f;
   }
 
+  char *get_name() {
+    return this->name_;
+  }
+
+  int32_t get_price() {
+    return this->price_;
+  }
+
  private:
   int32_t price_;
   unsigned long name_size_;

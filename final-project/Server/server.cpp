@@ -133,6 +133,12 @@ class CMyTCPServer : public CTCPServer {
   }
 
   virtual ~CMyTCPServer() {
+    for (int i = 0; i < foods_.size(); ++i) {
+      delete foods_[i];
+    }
+    for (int i = 0; i < records_.size(); ++i) {
+      delete records_[i];
+    }
   }
 
  private:
@@ -176,13 +182,36 @@ class CMyTCPServer : public CTCPServer {
   };
 
   void do_command(int nConnectedSocket, std::vector<char *> result) {
+    // command: getfood
     if (result.size() == 2 && strcmp(result[1], "getfood") == 0) {
-      Food f(2, "food1");
-      add_food(&f);
+      Food *f = new Food(2, "food1");
+      add_food(f);
       auto info = get_all_food_info();
       if (::write(nConnectedSocket, info.c_str(), strlen(info.c_str())) == -1) {
         return;
       }
+      return;
+    }
+
+    // command: buyfood
+    if (result.size() == 4 && strcmp(result[1], "buyfood") == 0) {
+      int32_t price = -1;
+      int num = atoi(result[3]);
+      for (int i = 0; i < foods_.size(); ++i) {
+        if (strcmp(result[2], foods_[i]->get_name()) == 0) {
+          price = num * foods_[i]->get_price();
+          break;
+        }
+      }
+      if (price != -1) {
+        Record *r = new Record(result[0], result[1], num, price);
+        add_record(r);
+        std::cout << get_all_record_info() << std::endl;
+        ::write(nConnectedSocket, "buy success", 11);
+      } else {
+        ::write(nConnectedSocket, "error command", 13);
+      }
+      return;
     }
   }
 
@@ -197,11 +226,23 @@ class CMyTCPServer : public CTCPServer {
   }
 
   std::string get_all_record_info() {
-    return "";
+    std::stringstream ss;
+    for (int i = 0; i < records_.size(); ++i) {
+      ss << records_[i]->get_info();
+      ss << "\n";
+    }
+    std::string str = ss.str();
+    return str;
   }
 
   void add_food(Food *f) {
     foods_.push_back(f);
+    // TODO:序列化
+  }
+
+  void add_record(Record *r) {
+    records_.push_back(r);
+    // TODO:序列化
   }
 
   std::vector<Food *> foods_;
