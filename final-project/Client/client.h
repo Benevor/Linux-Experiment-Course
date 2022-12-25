@@ -81,7 +81,7 @@ class CTCPClient {
  private:
   virtual int ClientFunction(int nConnectedSocket, char *command) = 0;
 
- private:
+ protected:
   int m_nServerPort;
   char *m_strServerIP;
 
@@ -144,4 +144,38 @@ class CMyTCPClient : public CTCPClient {
  public:
   char user_name_[20];
   char server_name_[2];
+};
+
+class MonitorClient : public CTCPClient {
+ public:
+  MonitorClient(int nServerPort, const char *strServerIP) : CTCPClient(nServerPort, strServerIP) {
+  }
+
+  virtual ~MonitorClient() {
+  }
+
+ private:
+  virtual int ClientFunction(int nConnectedSocket, char *command) {
+    long re = 1;
+    // heart beat
+    while (re > 0) {
+      // send heart beat
+      char request[REQUEST_BYTE_MAX];
+      memset(request, 0, REQUEST_BYTE_MAX);
+      memcpy(request, "heart beat", 10);
+      ::write(nConnectedSocket, request, REQUEST_BYTE_MAX);
+
+      // receive alive
+      char response[RESPONSE_BYTE_MAX];
+      memset(response, 0, RESPONSE_BYTE_MAX);
+      re = ::read(nConnectedSocket, response, RESPONSE_BYTE_MAX);
+      if (re > 0) {
+        std::cout << response << std::endl;
+      }
+      sleep(1);
+    }
+    std::cout << "port " << m_nServerPort << " is dead !!！" << std::endl;
+    Close();
+    return 0;
+  }
 };

@@ -118,7 +118,7 @@ class CTCPServer {
  private:
   virtual void ServerFunction(void *arg) = 0;
  public:
-  virtual void deserialize(std::string src_path, std::string dest_path, CTCPServer *new_server) = 0;
+  virtual void deserialize(std::string src_path, CTCPServer *new_server) = 0;
 
  protected:
   int m_nServerPort;
@@ -210,6 +210,12 @@ class CMyTCPServer : public CTCPServer {
   }
 
   static void do_command(int nConnectedSocket, std::vector<char *> result, CMyTCPServer *server) {
+    // heart beat
+    if (result.size() == 1 && strcmp(result[0], "heart beat") == 0) {
+      ::write(nConnectedSocket, "alive", 5);
+      return;
+    }
+
     // command: getfood
     if (result.size() == 2 && strcmp(result[1], "getfood") == 0) {
       auto info = get_all_food_info(server);
@@ -283,11 +289,14 @@ class CMyTCPServer : public CTCPServer {
   }
 
  public:
-  virtual void deserialize(std::string src_path, std::string dest_path, CTCPServer *new_server) {
+  virtual void deserialize(std::string src_path, CTCPServer *new_server) {
     //    new_server->file_lock_.lock(); // 错误 ?
     auto my_server = dynamic_cast<CMyTCPServer *>(new_server);
     std::cout << "src_path: " << src_path.c_str() << std::endl;
     FILE *fp = fopen(src_path.c_str(), "r+");
+    if (fp == nullptr) {
+      return;
+    }
     class_type nType = CLASS_NONE;
     auto re = fread(&nType, sizeof(int), 1, fp);
     while (re != 0) {
