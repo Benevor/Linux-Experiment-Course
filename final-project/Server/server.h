@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <pthread.h>
+#include <mutex>
 
 #include "serializable.h"
 #include "common.h"
@@ -125,6 +126,8 @@ class CTCPServer {
   int m_nLengthOfQueueOfListen;
   char *file_path_;
   char *server_name_;
+
+  std::mutex file_lock_;
 };
 
 class CMyTCPServer : public CTCPServer {
@@ -264,19 +267,24 @@ class CMyTCPServer : public CTCPServer {
   }
 
   static void add_food(Food *f, CMyTCPServer *server) {
+    server->file_lock_.lock();
     server->foods_.push_back(f);
     // 序列化
     serialize(f, CLASS_FOOD, server);
+    server->file_lock_.unlock();
   }
 
   static void add_record(Record *r, CMyTCPServer *server) {
+    server->file_lock_.lock();
     server->records_.push_back(r);
     // 序列化
     serialize(r, CLASS_RECORD, server);
+    server->file_lock_.unlock();
   }
 
  public:
   virtual void deserialize(std::string src_path, std::string dest_path, CTCPServer *new_server) {
+    //    new_server->file_lock_.lock(); // 错误 ?
     auto my_server = dynamic_cast<CMyTCPServer *>(new_server);
     std::cout << "src_path: " << src_path.c_str() << std::endl;
     FILE *fp = fopen(src_path.c_str(), "r+");
@@ -300,22 +308,26 @@ class CMyTCPServer : public CTCPServer {
   };
 
   static std::string get_all_food_info(CMyTCPServer *server) {
+    server->file_lock_.lock();
     std::stringstream ss;
     for (auto &food: server->foods_) {
       ss << food->get_info();
       ss << "\n";
     }
     std::string str = ss.str();
+    server->file_lock_.unlock();
     return str;
   }
 
   static std::string get_all_record_info(CMyTCPServer *server) {
+    server->file_lock_.lock();
     std::stringstream ss;
     for (auto &record: server->records_) {
       ss << record->get_info();
       ss << "\n";
     }
     std::string str = ss.str();
+    server->file_lock_.unlock();
     return str;
   }
 
