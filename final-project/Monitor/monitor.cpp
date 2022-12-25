@@ -36,6 +36,6 @@ int main(int argc, char **argv) {
   CMyTCPServer new_server(new_server_port, new_server_name, new_server_host_path);
 
   new_server.deserialize(src_path, dest_path, &new_server);
-  std::cout << new_server.get_all_food_info() << std::endl;
-  std::cout << new_server.get_all_record_info() << std::endl;
+  std::cout << CMyTCPServer::get_all_food_info(&new_server) << std::endl;
+  std::cout << CMyTCPServer::get_all_record_info(&new_server) << std::endl;
 }

@@ -8,9 +8,17 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <iostream>
+#include <pthread.h>
 
 #include "serializable.h"
 #include "common.h"
+
+class CTCPServer;
+struct threadPara {
+  int nConnectedSocket;
+  int nListenSocket;
+  CTCPServer *server;
+};
 
 class CTCPServer {
  public:
@@ -98,22 +106,16 @@ class CTCPServer {
         return -1;
       }
 
-      // TODO Benevor:: 这里改为子线程处理，就可以使server同时处理多个client的请求
-      auto re = ServerFunction(nConnectedSocket, nListenSocket);
-
-      ::close(nConnectedSocket);
-      if (re != 0) {
-        break;
-      }
+      // Benevor:: 这里改为子线程处理，就可以使server同时处理多个client的请求
+      threadPara tp{nConnectedSocket, nListenSocket, this};
+      ServerFunction((void *) (&tp));
     }
-
-    ::close(nListenSocket);
-    return 0;
+    //    ::close(nListenSocket);
+    //    return 0;
   }
 
  private:
-  virtual int ServerFunction(int nConnectedSocket, int nListenSocket) = 0;
-  virtual bool serialize(SerializableBase *s, class_type type) = 0;
+  virtual void ServerFunction(void *arg) = 0;
  public:
   virtual void deserialize(std::string src_path, std::string dest_path, CTCPServer *new_server) = 0;
 
@@ -150,14 +152,24 @@ class CMyTCPServer : public CTCPServer {
   }
 
  private:
-  virtual int ServerFunction(int nConnectedSocket, int nListenSocket) {
+  virtual void ServerFunction(void *arg) {
+    pthread_t pt;
+    pthread_create(&pt, NULL, run_thread, arg);
+  }
+
+  static void *run_thread(void *arg) {
+    auto tp = (threadPara *) arg;
+    int nConnectedSocket = tp->nConnectedSocket;
+    auto server = dynamic_cast<CMyTCPServer *>(tp->server);
+    //    int nListenSocket = tp->nListenSocket;
+
     char request[REQUEST_BYTE_MAX];
     std::vector<char *> result;
 
     while (!(result.size() == 2 && strcmp(result[1], "close") == 0)) {
       if (!result.empty()) {
         // 执行命令
-        do_command(nConnectedSocket, result);
+        do_command(nConnectedSocket, result, server);
       }
 
       // 循环接收命令
@@ -178,12 +190,13 @@ class CMyTCPServer : public CTCPServer {
     }
 
     std::cout << "close connection !!! " << std::endl;
-    return 0;
+    ::close(nConnectedSocket);
+    return nullptr;
   }
 
-  virtual bool serialize(SerializableBase *s, class_type type) {
-    std::string path(file_path_);
-    std::string server_name(server_name_);
+  static bool serialize(SerializableBase *s, class_type type, CMyTCPServer *server) {
+    std::string path(server->file_path_);
+    std::string server_name(server->server_name_);
     path = path + server_name + "-data";
     FILE *fp = fopen(path.c_str(), "a+");
     if (fp == nullptr) { return false; }
@@ -193,10 +206,10 @@ class CMyTCPServer : public CTCPServer {
     return true;
   }
 
-  void do_command(int nConnectedSocket, std::vector<char *> result) {
+  static void do_command(int nConnectedSocket, std::vector<char *> result, CMyTCPServer *server) {
     // command: getfood
     if (result.size() == 2 && strcmp(result[1], "getfood") == 0) {
-      auto info = get_all_food_info();
+      auto info = get_all_food_info(server);
       if (info == "") {
         ::write(nConnectedSocket, "empty store", 11);
       } else {
@@ -205,8 +218,9 @@ class CMyTCPServer : public CTCPServer {
       return;
     }
 
+    // command: getrecord
     if (result.size() == 2 && strcmp(result[1], "getrecord") == 0) {
-      auto info = get_all_record_info();
+      auto info = get_all_record_info(server);
       if (info == "") {
         ::write(nConnectedSocket, "empty record", 12);
       } else {
@@ -219,7 +233,7 @@ class CMyTCPServer : public CTCPServer {
     if (result.size() == 4 && strcmp(result[1], "buyfood") == 0) {
       int32_t price = -1;
       int num = atoi(result[3]);
-      for (auto &food: foods_) {
+      for (auto &food: server->foods_) {
         if (strcmp(result[2], food->get_name()) == 0) {
           price = num * food->get_price();
           break;
@@ -227,8 +241,8 @@ class CMyTCPServer : public CTCPServer {
       }
       if (price != -1) {
         Record *r = new Record(result[0], result[2], num, price);
-        add_record(r);
-        std::cout << get_all_record_info() << std::endl;
+        add_record(r, server);
+        std::cout << get_all_record_info(server) << std::endl;
         ::write(nConnectedSocket, "buy success", 11);
       } else {
         ::write(nConnectedSocket, "error command", 13);
@@ -240,8 +254,8 @@ class CMyTCPServer : public CTCPServer {
     if (result.size() == 4 && strcmp(result[1], "addfood") == 0) {
       int32_t price = atoi(result[3]);
       Food *f = new Food(price, result[2]);
-      add_food(f);
-      std::cout << get_all_food_info() << std::endl;
+      add_food(f, server);
+      std::cout << get_all_food_info(server) << std::endl;
       ::write(nConnectedSocket, "add success", 11);
       return;
     }
@@ -249,21 +263,21 @@ class CMyTCPServer : public CTCPServer {
     ::write(nConnectedSocket, "error command", 13);
   }
 
-  void add_food(Food *f) {
-    foods_.push_back(f);
+  static void add_food(Food *f, CMyTCPServer *server) {
+    server->foods_.push_back(f);
     // 序列化
-    serialize(f, CLASS_FOOD);
+    serialize(f, CLASS_FOOD, server);
   }
 
-  void add_record(Record *r) {
-    records_.push_back(r);
+  static void add_record(Record *r, CMyTCPServer *server) {
+    server->records_.push_back(r);
     // 序列化
-    serialize(r, CLASS_RECORD);
+    serialize(r, CLASS_RECORD, server);
   }
 
  public:
   virtual void deserialize(std::string src_path, std::string dest_path, CTCPServer *new_server) {
-    CMyTCPServer *my_server = dynamic_cast<CMyTCPServer *>(new_server);
+    auto my_server = dynamic_cast<CMyTCPServer *>(new_server);
     std::cout << "src_path: " << src_path.c_str() << std::endl;
     FILE *fp = fopen(src_path.c_str(), "r+");
     class_type nType = CLASS_NONE;
@@ -273,21 +287,21 @@ class CMyTCPServer : public CTCPServer {
         Food f;
         auto tmp = f.deserialize(fp);
         Food *food = dynamic_cast<Food *>(tmp);
-        my_server->add_food(food);
+        add_food(food, my_server);
       } else if (nType == CLASS_RECORD) {
         Record r;
         auto tmp = r.deserialize(fp);
         auto record = dynamic_cast<Record *>(tmp);
-        my_server->add_record(record);
+        add_record(record, my_server);
       }
       re = fread(&nType, sizeof(int), 1, fp);
     }
     fclose(fp);
   };
 
-  std::string get_all_food_info() {
+  static std::string get_all_food_info(CMyTCPServer *server) {
     std::stringstream ss;
-    for (auto &food: foods_) {
+    for (auto &food: server->foods_) {
       ss << food->get_info();
       ss << "\n";
     }
@@ -295,9 +309,9 @@ class CMyTCPServer : public CTCPServer {
     return str;
   }
 
-  std::string get_all_record_info() {
+  static std::string get_all_record_info(CMyTCPServer *server) {
     std::stringstream ss;
-    for (auto &record: records_) {
+    for (auto &record: server->records_) {
       ss << record->get_info();
       ss << "\n";
     }

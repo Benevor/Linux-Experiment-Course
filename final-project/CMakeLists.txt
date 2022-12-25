@@ -4,6 +4,9 @@ project(MyProject)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE "Debug")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+find_package(Threads REQUIRED)
+
 # 头文件
 include_directories(
         ${PROJECT_SOURCE_DIR}/Server/
@@ -31,3 +34,7 @@ add_executable(client ${client})
 add_executable(server ${server})
 add_executable(store ${store})
 add_executable(monitor ${monitor})
+
+# 链接测试库
+#target_link_libraries(server
+#        pthread)
