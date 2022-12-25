@@ -190,11 +190,11 @@ class CMyTCPServer : public CTCPServer {
   void do_command(int nConnectedSocket, std::vector<char *> result) {
     // command: getfood
     if (result.size() == 2 && strcmp(result[1], "getfood") == 0) {
-      Food *f = new Food(2, "food1");
-      add_food(f);
       auto info = get_all_food_info();
-      if (::write(nConnectedSocket, info.c_str(), strlen(info.c_str())) == -1) {
-        return;
+      if (info == "") {
+        ::write(nConnectedSocket, "empty store", 11);
+      } else {
+        ::write(nConnectedSocket, info.c_str(), strlen(info.c_str()));
       }
       return;
     }
@@ -219,6 +219,18 @@ class CMyTCPServer : public CTCPServer {
       }
       return;
     }
+
+    // command: addfood
+    if (result.size() == 4 && strcmp(result[1], "addfood") == 0) {
+      int32_t price = atoi(result[3]);
+      Food *f = new Food(price, result[2]);
+      add_food(f);
+      std::cout << get_all_food_info() << std::endl;
+      ::write(nConnectedSocket, "add success", 11);
+      return;
+    }
+
+    ::write(nConnectedSocket, "error command", 13);
   }
 
   std::string get_all_food_info() {

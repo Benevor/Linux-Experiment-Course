@@ -93,26 +93,7 @@ class CMyTCPClient : public CTCPClient {
       return 0;
     }
 
-    if (strcmp(command, "getfood") == 0) {
-      // send request
-      char request[REQUEST_BYTE_MAX];
-      memset(request, 0, REQUEST_BYTE_MAX);
-      int offset = 0;
-      memcpy(request + offset, user_name_, strlen(user_name_));
-      offset += strlen(user_name_);
-      memcpy(request + offset, "|", 1);
-      offset += 1;
-      memcpy(request + offset, command, strlen(command));
-      offset += strlen(command);
-      memcpy(request + offset, "|", 1);
-      ::write(nConnectedSocket, request, REQUEST_BYTE_MAX);
-
-      // receive response
-      char response[RESPONSE_BYTE_MAX];
-      memset(response, 0, RESPONSE_BYTE_MAX);
-      ::read(nConnectedSocket, response, RESPONSE_BYTE_MAX);
-      std::cout << response << std::endl;
-    } else if (strcmp(command, "close") == 0) {
+    if (strcmp(command, "close") == 0) {
       // send request
       char request[REQUEST_BYTE_MAX];
       memset(request, 0, REQUEST_BYTE_MAX);
@@ -126,7 +107,7 @@ class CMyTCPClient : public CTCPClient {
       memcpy(request + offset, "|", 1);
       ::write(nConnectedSocket, request, REQUEST_BYTE_MAX);
       return -1;
-    } else {
+    } else { // getfood ; buyfood ; addfood
       // send request
       char request[REQUEST_BYTE_MAX];
       memset(request, 0, REQUEST_BYTE_MAX);
