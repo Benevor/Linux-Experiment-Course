@@ -192,6 +192,16 @@ class CMyTCPServer : public CTCPServer {
       return;
     }
 
+    if (result.size() == 2 && strcmp(result[1], "getrecord") == 0) {
+      auto info = get_all_record_info();
+      if (info == "") {
+        ::write(nConnectedSocket, "empty record", 12);
+      } else {
+        ::write(nConnectedSocket, info.c_str(), strlen(info.c_str()));
+      }
+      return;
+    }
+
     // command: buyfood
     if (result.size() == 4 && strcmp(result[1], "buyfood") == 0) {
       int32_t price = -1;
@@ -203,7 +213,7 @@ class CMyTCPServer : public CTCPServer {
         }
       }
       if (price != -1) {
-        Record *r = new Record(result[0], result[1], num, price);
+        Record *r = new Record(result[0], result[2], num, price);
         add_record(r);
         std::cout << get_all_record_info() << std::endl;
         ::write(nConnectedSocket, "buy success", 11);
