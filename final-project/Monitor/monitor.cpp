@@ -45,6 +45,12 @@ int main(int argc, char **argv) {
   CMyTCPServer new_server(new_server_port, new_server_name, new_server_host_path);
 
   new_server.deserialize(src_path, &new_server);
+  std::cout << "=========== food info in new server ===========" << std::endl;
   std::cout << CMyTCPServer::get_all_food_info(&new_server) << std::endl;
+  std::cout << "=========== record info in new server ===========" << std::endl;
   std::cout << CMyTCPServer::get_all_record_info(&new_server) << std::endl;
+  std::cout << "=========== new server is running ===========" << std::endl;
+  std::cout << "new server port is: " << new_server_port << std::endl;
+
+  new_server.Run();
 }

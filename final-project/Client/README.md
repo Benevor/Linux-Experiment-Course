@@ -2,5 +2,5 @@
 
 ```bash
 ./client a
-./client a r
+./client ar
 ```
