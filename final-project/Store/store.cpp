@@ -33,12 +33,34 @@ int main(int argc, char **argv) {
 
   // 循环执行命令
   char command[50];
+  bool need_run = true;
   std::cout << "Please enter your command: ";
   std::cin >> command;
   while (true) {
-    auto re = client.Run(command);
-    if (re != 0) {
-      break;
+    if (strcmp(command, "recona") == 0) {
+      server_port = SERVER_A_PORT;
+      need_run = false;
+    } else if (strcmp(command, "reconb") == 0) {
+      server_port = SERVER_B_PORT;
+      need_run = false;
+    } else if (strcmp(command, "reconar") == 0) {
+      server_port = SERVER_A_RECOVERY_PORT;
+      need_run = false;
+    } else if (strcmp(command, "reconbr") == 0) {
+      server_port = SERVER_B_RECOVERY_PORT;
+      need_run = false;
+    }
+    if (need_run) {
+      auto re = client.Run(command);
+      if (re != 0) {
+        break;
+      }
+    } else {
+      need_run = true;
+      connected = client.ReConnect(server_port);
+      if (connected != -1) {
+        std::cout << "connected to port " << server_port << " successfully" << std::endl;
+      }
     }
     std::cout << "Please enter your command: ";
     std::cin >> command;
