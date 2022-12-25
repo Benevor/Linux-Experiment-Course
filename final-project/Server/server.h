@@ -139,11 +139,11 @@ class CMyTCPServer : public CTCPServer {
   }
 
   virtual ~CMyTCPServer() {
-    for (int i = 0; i < foods_.size(); ++i) {
-      delete foods_[i];
+    for (auto &food: foods_) {
+      delete food;
     }
-    for (int i = 0; i < records_.size(); ++i) {
-      delete records_[i];
+    for (auto &record: records_) {
+      delete record;
     }
   }
 
@@ -203,9 +203,9 @@ class CMyTCPServer : public CTCPServer {
     if (result.size() == 4 && strcmp(result[1], "buyfood") == 0) {
       int32_t price = -1;
       int num = atoi(result[3]);
-      for (int i = 0; i < foods_.size(); ++i) {
-        if (strcmp(result[2], foods_[i]->get_name()) == 0) {
-          price = num * foods_[i]->get_price();
+      for (auto &food: foods_) {
+        if (strcmp(result[2], food->get_name()) == 0) {
+          price = num * food->get_price();
           break;
         }
       }
@@ -235,8 +235,8 @@ class CMyTCPServer : public CTCPServer {
 
   std::string get_all_food_info() {
     std::stringstream ss;
-    for (int i = 0; i < foods_.size(); ++i) {
-      ss << foods_[i]->get_info();
+    for (auto &food: foods_) {
+      ss << food->get_info();
       ss << "\n";
     }
     std::string str = ss.str();
@@ -245,8 +245,8 @@ class CMyTCPServer : public CTCPServer {
 
   std::string get_all_record_info() {
     std::stringstream ss;
-    for (int i = 0; i < records_.size(); ++i) {
-      ss << records_[i]->get_info();
+    for (auto &record: records_) {
+      ss << record->get_info();
       ss << "\n";
     }
     std::string str = ss.str();
