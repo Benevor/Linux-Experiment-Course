@@ -5,11 +5,26 @@
 #include "client.h"
 
 int main(int argc, char **argv) {
-  if (argc != 2) {
+  if (argc != 2 && argc != 3) {
     std::cout << "Parameters error" << std::endl;
     return 0;
   }
-  int server_port = atoi(argv[1]);
+  int server_port = 0;
+
+  if (strcmp(argv[1], "a") == 0) {
+    if (argc == 3 && strcmp(argv[2], "r") == 0) {
+      server_port = SERVER_A_RECOVERY_PORT;
+    } else {
+      server_port = SERVER_A_PORT;
+    }
+  } else if (strcmp(argv[1], "b") == 0) {
+    if (argc == 3 && strcmp(argv[2], "r") == 0) {
+      server_port = SERVER_B_RECOVERY_PORT;
+    } else {
+      server_port = SERVER_B_PORT;
+    }
+  }
+
   CMyTCPClient client(server_port, "127.0.0.1");
   client.Init();
 

@@ -46,7 +46,7 @@ class Food : public SerializableBase {
   }
 
   virtual ~Food() {
-    delete this->name_;
+    delete[]this->name_;
   }
 
  public:
@@ -116,8 +116,8 @@ class Record : public SerializableBase {
   }
 
   virtual ~Record() {
-    delete this->user_name_;
-    delete this->food_name_;
+    delete[]this->user_name_;
+    delete[]this->food_name_;
   }
 
  public:

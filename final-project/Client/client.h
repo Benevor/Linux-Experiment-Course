@@ -13,8 +13,7 @@
 #include <vector>
 #include <iostream>
 
-#define REQUEST_BYTE_MAX 100
-#define RESPONSE_BYTE_MAX 500
+#include "common.h"
 
 class CTCPClient {
  public:
@@ -65,6 +64,18 @@ class CTCPClient {
 
   void Close() {
     ::close(nClientSocket_);
+  }
+
+  int ReConnect(int m_nServerPort, char *strServerIP = nullptr) {
+    ::close(nClientSocket_);
+    this->m_nServerPort = m_nServerPort;
+    if (strServerIP != nullptr) {
+      delete[]this->m_strServerIP;
+      int nlength = strlen(strServerIP);
+      m_strServerIP = new char[nlength + 1];
+      strcpy(m_strServerIP, strServerIP);
+    }
+    return Init();
   }
 
  private:
@@ -132,4 +143,5 @@ class CMyTCPClient : public CTCPClient {
 
  public:
   char user_name_[20];
+  char server_name_[2];
 };

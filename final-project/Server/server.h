@@ -10,14 +10,7 @@
 #include <iostream>
 
 #include "serializable.h"
-
-#define SERVER_A_NAME "ServerA"
-#define SERVER_B_NAME "ServerB"
-#define HOST_A_PATH "/home/liujibo/Linux-Experiment-Course/final-project/HostA/"
-#define HOST_B_PATH "/home/liujibo/Linux-Experiment-Course/final-project/HostB/"
-
-#define REQUEST_BYTE_MAX 100
-#define RESPONSE_BYTE_MAX 500
+#include "common.h"
 
 class CTCPServer {
  public:
